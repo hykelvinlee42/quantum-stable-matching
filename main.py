@@ -47,7 +47,7 @@ def main():
     state_space_women = tensorproduct(womanA_sv, womanB_sv)  # women acceptances space state
 
     couple_stability = tensorproduct(state_space_men, state_space_women)
-    print(couple_stability)
+    display_sv(couple_stability)
 
 
 def man_decision(man, decision_oracle, n_women=len(women)):
@@ -117,6 +117,11 @@ def simulation(qc):
     plot_histogram(counts)
     # plt.show()
     return statevector, counts
+
+
+def display_sv(sv):
+    for i in range(len(sv)):
+        print("index", i, "-", sv[i])
 
 
 if __name__ == "__main__":
