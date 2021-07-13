@@ -20,7 +20,7 @@ women = [0, 1]  # ["A", "B"]
 By a men-optimal Gale-Shapley Algorithm (classical), the stable matching would be:
 (Man 0, Woman A), (Man 1, Woman B)
 
-By a women-optimal Gale-Shapley Algoritquhm (classical), the stable matching would be:
+By a women-optimal Gale-Shapley Algorithm (classical), the stable matching would be:
 (Man 0, Woman A), (Man 1, Woman B)
 """
 
