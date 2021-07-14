@@ -2,8 +2,10 @@ from qiskit import Aer, assemble
 from qiskit import QuantumCircuit
 from qiskit.visualization import plot_histogram
 from qiskit.aqua.utils import tensorproduct
+from qiskit_textbook.tools import vector2latex
 import matplotlib.pyplot as plt
 import numpy as np
+from math import pi
 
 # https://qiskit.org/textbook/ch-algorithms/grover.html
 men = [0, 1]
@@ -27,7 +29,7 @@ By a women-optimal Gale-Shapley Algorithm (classical), the stable matching would
 
 def main():
     def oracle_men(qc, qubit):
-        qc.z(qubit)
+        qc.rz(pi, qubit)
         return qc
 
     man0_sv, man0_count = man_decision(men[0], oracle_men)
@@ -35,16 +37,17 @@ def main():
     state_space_men = tensorproduct(man0_sv, man1_sv)  # state space of all men decision system
 
     def oracle_womanA(qc, qubit):
-        qc.z(qubit)
+        qc.rz(pi, qubit)
         return qc
 
     womanA_sv, womanA_count = woman_decision(women[0], oracle_womanA)
 
     def oracle_womanB(qc, qubit):
+        qc.z(qubit)
         return qc
 
     womanB_sv, womanB_count = woman_decision(women[1], oracle_womanB)
-    state_space_women = tensorproduct(womanA_sv, womanB_sv)  # women acceptances space state
+    state_space_women = tensorproduct(womanA_sv, womanB_sv)  # women acceptances state space
 
     couple_stability = tensorproduct(state_space_men, state_space_women)
     display_sv(couple_stability)
@@ -55,11 +58,13 @@ def man_decision(man, decision_oracle, n_women=len(women)):
     grover_circuit = initialize_s(grover_circuit, [0])
 
     for i in range(int(np.sqrt((n_women)))):  # Grover Algorithm: repeat this step for sqrt(n_women) times
+        grover_circuit.barrier()  # for visual separation
         grover_circuit = add_oracle(grover_circuit, 0, decision_oracle)
+        grover_circuit.barrier()  # for visual separation
         grover_circuit = add_diffuser(grover_circuit, 0, decision_oracle)
 
-    # show_circuit(grover_circuit, "Man_" + str(man))
-    statevector, counts = simulation(grover_circuit)
+    title = "Man_" + str(man)
+    statevector, counts = simulation(grover_circuit, title)
     return statevector, counts
 
 
@@ -68,11 +73,14 @@ def woman_decision(woman, decision_oracle, n_men=len(men)):
     grover_circuit = initialize_s(grover_circuit, [0])
 
     for i in range(int(np.sqrt((n_men)))):  # Grover Algorithm: repeat this step for sqrt(n_women) times
+        grover_circuit.barrier()  # for visual separation
         grover_circuit = add_oracle(grover_circuit, 0, decision_oracle)
+        grover_circuit.barrier()  # for visual separation
         grover_circuit = add_diffuser(grover_circuit, 0, decision_oracle)
 
-    # show_circuit(grover_circuit, "Woman_" + str(woman))
-    statevector, counts = simulation(grover_circuit)
+    woman_identifier = "A" if woman == 0 else "B"
+    title = "Woman_" + woman_identifier
+    statevector, counts = simulation(grover_circuit, title)
     return statevector, counts
 
 
@@ -103,8 +111,10 @@ def add_diffuser(qc, qubit, oracle=None):
     return qc
 
 
-def simulation(qc):
+def simulation(qc, title=None):
     qc.measure_all()
+    if title is not None:
+        show_circuit(qc, title + " measured")
     sim = Aer.get_backend("aer_simulator")
 
     qc_sim = qc.copy()
@@ -114,8 +124,9 @@ def simulation(qc):
 
     statevector = result.get_statevector()
     counts = result.get_counts()
-    plot_histogram(counts)
-    # plt.show()
+    # vector2latex(statevector, pretext="|\\psi\\rangle =")
+    # plot_histogram(counts)
+
     return statevector, counts
 
 
